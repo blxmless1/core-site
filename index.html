@@ -848,6 +848,167 @@
     align-items: center;
     justify-content: center;
   }
+
+  /* Product detail overlay */
+  #product-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(10,9,8,0.96);
+    backdrop-filter: blur(16px);
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 40px 20px;
+  }
+  #product-overlay.show {
+    display: flex;
+  }
+  .product-overlay-inner {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    background: var(--card-bg);
+    border: 1px solid rgba(212,175,55,0.25);
+    padding: 56px 48px;
+    animation: overlaySlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes overlaySlideIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .product-overlay-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+  }
+  .product-overlay-close {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--cream-dim);
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+  .product-overlay-close:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .product-overlay-number {
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .product-overlay-title {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .product-overlay-desc {
+    font-size: 0.9375rem;
+    color: var(--cream-dim);
+    line-height: 1.75;
+    margin-bottom: 28px;
+  }
+  .product-overlay-price {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .product-overlay-price-note {
+    font-size: 0.875rem;
+    color: var(--cream-dim);
+    margin-bottom: 32px;
+  }
+  .product-overlay-divider {
+    width: 40px;
+    height: 1px;
+    background: var(--card-border);
+    margin: 32px 0;
+  }
+  .product-overlay-features {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+  .product-overlay-feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: var(--cream-dim);
+  }
+  .product-overlay-feature-icon {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    color: var(--accent);
+  }
+  .product-overlay-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 36px;
+  }
+  .product-overlay-tag {
+    font-size: 0.6875rem;
+    padding: 5px 12px;
+    border: 1px solid var(--card-border);
+    color: var(--cream-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .product-overlay-cta {
+    display: flex;
+    gap: 12px;
+  }
+  .product-overlay-cta .btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .product-overlay-cta .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .product-overlay-cta .btn-primary:hover {
+    background: #e8c547;
+    border-color: #e8c547;
+    box-shadow: 0 8px 32px rgba(212,175,55,0.35);
+  }
+  @media (max-width: 600px) {
+    .product-overlay-inner {
+      padding: 48px 28px 36px;
+    }
+    .product-overlay-title { font-size: 1.5rem; }
+    .product-overlay-price { font-size: 2rem; }
+  }
 </style>
 </head>
 <body>
@@ -1591,6 +1752,42 @@
     }
   });
 
+  // Product card click → detail overlay
+  const salesBotCard = document.getElementById('sales-bot-card');
+  const productOverlay = document.getElementById('product-overlay');
+  const productOverlayClose = document.getElementById('product-overlay-close');
+  const overlayWatchDemoBtn = document.getElementById('overlay-watch-demo-btn');
+
+  if (salesBotCard && productOverlay) {
+    salesBotCard.addEventListener('click', (e) => {
+      if (e.target.closest('.product-demo-btn')) return; // кнопка Demo отдельно
+      productOverlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    });
+
+    productOverlay.addEventListener('click', (e) => {
+      if (e.target === productOverlay || e.target.closest('#product-overlay-close')) {
+        productOverlay.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  if (productOverlayClose) {
+    productOverlayClose.addEventListener('click', () => {
+      productOverlay.classList.remove('show');
+      document.body.style.overflow = '';
+    });
+  }
+
+  // Watch Demo from overlay → open video modal
+  if (overlayWatchDemoBtn && demoModal) {
+    overlayWatchDemoBtn.addEventListener('click', () => {
+      productOverlay.classList.remove('show');
+      demoModal.classList.add('show');
+    });
+  }
+
   // Demo modal
   const demoBtn = document.getElementById('watch-demo-btn');
   const demoModal = document.getElementById('demo-modal');
@@ -1607,6 +1804,69 @@
     });
   }
 </script>
+
+<!-- Product Detail Overlay -->
+<div id="product-overlay">
+  <div class="product-overlay-inner">
+    <button class="product-overlay-close" id="product-overlay-close">←</button>
+    <div class="product-overlay-badge">First Product</div>
+    <div class="product-overlay-number">01</div>
+    <h2 class="product-overlay-title">Sales Bot</h2>
+    <p class="product-overlay-desc">
+      AI-powered Telegram bot that converts leads, answers questions and closes deals automatically. Handles conversations 24/7, qualifies prospects and books calls while you focus on what matters.
+    </p>
+    <div class="product-overlay-price">$150</div>
+    <div class="product-overlay-price-note">one-time payment • lifetime access</div>
+
+    <div class="product-overlay-divider"></div>
+
+    <div class="product-overlay-features">
+      <div class="product-overlay-feature">
+        <div class="product-overlay-feature-icon">✓</div>
+        <span>24/7 autonomous responses — never miss a lead</span>
+      </div>
+      <div class="product-overlay-feature">
+        <div class="product-overlay-feature-icon">✓</div>
+        <span>Smart lead qualification and routing</span>
+      </div>
+      <div class="product-overlay-feature">
+        <div class="product-overlay-feature-icon">✓</div>
+        <span>Calendar booking and call scheduling</span>
+      </div>
+      <div class="product-overlay-feature">
+        <div class="product-overlay-feature-icon">✓</div>
+        <span>Telegram + CRM integration</span>
+      </div>
+      <div class="product-overlay-feature">
+        <div class="product-overlay-feature-icon">✓</div>
+        <span>Setup in under 10 minutes</span>
+      </div>
+    </div>
+
+    <div class="product-overlay-tags">
+      <span class="product-overlay-tag">AI</span>
+      <span class="product-overlay-tag">Telegram</span>
+      <span class="product-overlay-tag">NLP</span>
+      <span class="product-overlay-tag">CRM</span>
+      <span class="product-overlay-tag">GPT-4</span>
+    </div>
+
+    <div class="product-overlay-cta">
+      <a href="https://t.me/blxmless" class="btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        Contact
+      </a>
+      <button class="btn btn-primary" id="overlay-watch-demo-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px">
+          <polygon points="5,3 19,12 5,21"/>
+        </svg>
+        Watch Demo
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- Demo Modal -->
 <div id="demo-modal">
